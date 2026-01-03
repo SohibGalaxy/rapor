@@ -10,16 +10,17 @@ use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\TextColumn;
 use App\Filament\Resources\ClassRoomResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\ClassRoomResource\RelationManagers;
 use App\Filament\Resources\ClassRoomResource\Pages\EditClassRoom;
 use App\Filament\Resources\ClassRoomResource\Pages\ListClassRooms;
 use App\Filament\Resources\ClassRoomResource\Pages\CreateClassRoom;
+use App\Filament\Resources\ClassRoomResource\Pages\BulkInputScores;
 
 class ClassRoomResource extends Resource
 {
@@ -59,6 +60,11 @@ class ClassRoomResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Action::make('bulkInput')
+                    ->label('Input Nilai')
+                    ->icon('heroicon-o-document-plus')
+                    ->color('warning')
+                    ->url(fn(ClassRoom $record): string => ClassRoomResource::getUrl('bulk-input-scores', ['record' => $record])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -82,6 +88,7 @@ class ClassRoomResource extends Resource
             'index' => Pages\ListClassRooms::route('/'),
             'create' => Pages\CreateClassRoom::route('/create'),
             'edit' => Pages\EditClassRoom::route('/{record}/edit'),
+            'bulk-input-scores' => Pages\BulkInputScores::route('/{record}/bulk-input-scores'),
         ];
     }
 }
