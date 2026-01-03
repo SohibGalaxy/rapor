@@ -51,7 +51,7 @@ class ClassRoomResource extends Resource
     {
         return $table
             ->columns([
-                 TextColumn::make('schoolClass.name')->label('Kelas'),
+            TextColumn::make('schoolClass.name')->label('Kelas'),
             TextColumn::make('academicYear.name')->label('Tahun'),
             TextColumn::make('teacher.name')->label('Wali Kelas'),
             ])

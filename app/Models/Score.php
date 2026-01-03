@@ -15,7 +15,6 @@ class Score extends Model
         'uts_score',
         'uas_score',
     ];
-
     public function student()
     {
         return $this->belongsTo(Student::class);
