@@ -6,6 +6,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Resources\RelationManagers\RelationManager;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 
 class ClassRoomsRelationManager extends RelationManager
 {
@@ -16,6 +18,11 @@ class ClassRoomsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                if (Auth::user()?->isGuru()) {
+                    $query->where('teacher_id', Auth::user()->teacher->id);
+                }
+            })
             ->recordTitle(fn ($record) =>
                 $record->schoolClass->name . ' - ' . $record->academicYear->name
             )

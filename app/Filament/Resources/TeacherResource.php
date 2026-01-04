@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\TeacherResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\TeacherResource\RelationManagers;
+use Illuminate\Support\Facades\Auth;
 
 class TeacherResource extends Resource
 {
@@ -23,6 +24,31 @@ class TeacherResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
      protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $navigationLabel = 'Guru';
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canViewAny(): bool
+    {
+        return true;
+    }
+
+    public static function canView($record): bool
+    {
+        return true;
+    }
 
     public static function form(Form $form): Form
     {

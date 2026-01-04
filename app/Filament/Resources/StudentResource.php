@@ -13,6 +13,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\StudentResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\StudentResource\RelationManagers;
@@ -42,6 +43,14 @@ class StudentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                if (Auth::user()?->isGuru()) {
+                    $classRoomIds = Auth::user()->teacher->classRooms()->pluck('id')->toArray();
+                    $query->whereHas('classRooms', function (Builder $q) use ($classRoomIds) {
+                        $q->whereIn('class_rooms.id', $classRoomIds);
+                    });
+                }
+            })
             ->columns([
             TextColumn::make('nis'),
             TextColumn::make('nama'),

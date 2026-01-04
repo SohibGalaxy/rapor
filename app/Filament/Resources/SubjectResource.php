@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SubjectResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\SubjectResource\RelationManagers;
+use Illuminate\Support\Facades\Auth;
 
 class SubjectResource extends Resource
 {
@@ -22,6 +23,31 @@ class SubjectResource extends Resource
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $navigationLabel = 'Mata Pelajaran';
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canViewAny(): bool
+    {
+        return true;
+    }
+
+    public static function canView($record): bool
+    {
+        return true;
+    }
     
     public static function form(Form $form): Form
     {

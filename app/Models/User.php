@@ -65,4 +65,19 @@ class User extends Authenticatable
     {
         return $this->role === 'guru';
     }
+
+    public function teacher()
+    {
+        return $this->hasOne(Teacher::class);
+    }
+
+    public function classRoomsAsWali()
+    {
+        return $this->hasOneThrough(
+            ClassRoom::class,
+            Teacher::class,
+            'user_id',
+            'teacher_id'
+        );
+    }
 }

@@ -32,16 +32,18 @@ class FinalScoresRelationManager extends RelationManager
                     ->label('Nilai Akhir'),
             ])
             ->headerActions([
-                Action::make('export_excel')
+               Action::make('exportExcel')
                     ->label('Export Excel')
-                    ->icon('heroicon-o-document-arrow-down')
-                    ->color('success')
-                    ->action(function () {
-                        $student = $this->getOwnerRecord();
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success') // 🟢 WARNA HIJAU
+                    ->action(function (RelationManager $livewire) {
+
+                        // 🔑 SATU-SATUNYA CARA YANG BENAR
+                        $student = $livewire->getOwnerRecord();
 
                         return Excel::download(
-                            new FinalScoresExport($student->id),
-                            'rapor_' . $student->nama . '.xlsx'
+                            new FinalScoresExport($student),
+                            'RAPOR_' . $student->nama . '.xlsx'
                         );
                     }),
 
