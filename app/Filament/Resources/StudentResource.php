@@ -29,13 +29,23 @@ class StudentResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $isGuru = Auth::user()->isGuru();
+
         return $form
             ->schema([
-                 TextInput::make('nis')->required(),
-            TextInput::make('nama')->required(),
-            Select::make('gender')->options(['L'=>'L','P'=>'P']),
-            TextInput::make('sekolah'),
-            Textarea::make('alamat'),
+                 TextInput::make('nis')
+                    ->required()
+                    ->disabled($isGuru),
+            TextInput::make('nama')
+                    ->required()
+                    ->disabled($isGuru),
+            Select::make('gender')
+                    ->options(['L'=>'L','P'=>'P'])
+                    ->disabled($isGuru),
+            TextInput::make('sekolah')
+                    ->disabled($isGuru),
+            Textarea::make('alamat')
+                    ->disabled($isGuru),
             ]);
     }
 
@@ -43,26 +53,66 @@ class StudentResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function (Builder $query) {
+                $activeAcademicYear = \App\Models\AcademicYear::where('is_active', true)->first();
+
                 if (Auth::user()?->isGuru()) {
-                    $classRoomIds = Auth::user()->teacher->classRooms()->pluck('id')->toArray();
-                    $query->whereHas('classRooms', function (Builder $q) use ($classRoomIds) {
-                        $q->whereIn('class_rooms.id', $classRoomIds);
+                    $teacherClassRoomIds = Auth::user()->teacher->classRooms()->pluck('id')->toArray();
+                    $query->whereHas('classRooms', function (Builder $q) use ($teacherClassRoomIds) {
+                        $q->whereIn('class_rooms.id', $teacherClassRoomIds);
                     });
+                } elseif ($activeAcademicYear && !Auth::user()?->isGuru()) {
+                    $query->with(['classRooms' => function ($q) use ($activeAcademicYear) {
+                        $q->where('academic_year_id', $activeAcademicYear->id);
+                    }]);
                 }
             })
             ->columns([
             TextColumn::make('nis')->searchable(),
             TextColumn::make('nama')->searchable(),
             TextColumn::make('gender'),
-            TextColumn::make('classRooms.schoolClass.name')
+            TextColumn::make('active_classroom')
                 ->label('Kelas')
                 ->badge()
-                ->separator(', '),
+                ->getStateUsing(function ($record) {
+                    $activeAcademicYear = \App\Models\AcademicYear::where('is_active', true)->first();
+                    if ($activeAcademicYear) {
+                        $activeClassRoom = $record->classRooms()
+                            ->where('academic_year_id', $activeAcademicYear->id)
+                            ->with('schoolClass')
+                            ->first();
+                        return $activeClassRoom ? $activeClassRoom->schoolClass->name : '-';
+                    }
+                    return '-';
+                }),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('academic_year_id')
+                    ->label('Tahun Ajaran Aktif')
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (isset($data['value']) && $data['value']) {
+                            $query->whereHas('classRooms', function (Builder $q) use ($data) {
+                                $q->whereHas('academicYear', function (Builder $aq) use ($data) {
+                                    $aq->where('id', $data['value']);
+                                    $aq->where('is_active', true);
+                                });
+                            });
+                        }
+                        return $query;
+                    })
+                    ->options(
+                        \App\Models\AcademicYear::where('is_active', true)
+                            ->pluck('name', 'id')
+                            ->toArray()
+                    )
+                    ->searchable()
+                    ->visible(fn () => Auth::user()->isAdmin()),
+
                 Tables\Filters\SelectFilter::make('class_room_id')
                     ->relationship('classRooms', 'id', modifyQueryUsing: function (Builder $query) {
-                        return $query->with(['schoolClass', 'academicYear']);
+                        return $query->with(['schoolClass', 'academicYear'])
+                            ->whereHas('academicYear', function (Builder $q) {
+                                $q->where('is_active', true);
+                            });
                     })
                     ->label('Kelas')
                     ->getOptionLabelFromRecordUsing(fn (\App\Models\ClassRoom $record) => 

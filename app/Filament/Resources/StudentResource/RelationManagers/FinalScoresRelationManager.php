@@ -12,6 +12,7 @@ use App\Exports\FinalScoresExport;
 use App\Services\FinalScoreWordExport;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Contracts\HasTable;
+use Illuminate\Support\Facades\Auth;
 
 class FinalScoresRelationManager extends RelationManager
 {
@@ -29,6 +30,12 @@ class FinalScoresRelationManager extends RelationManager
         })->toArray();
 
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                if (Auth::user()?->isGuru()) {
+                    $guruClassRoomIds = Auth::user()->teacher->classRooms()->pluck('id')->toArray();
+                    $query->whereIn('class_room_id', $guruClassRoomIds);
+                }
+            })
             ->columns([
                 TextColumn::make('subject.name')
                     ->label('Mata Pelajaran'),
@@ -56,7 +63,8 @@ class FinalScoresRelationManager extends RelationManager
                         return $query;
                     })
                     ->options($classRoomOptions)
-                    ->label('Riwayat Kelas'),
+                    ->label('Riwayat Kelas')
+                    ->visible(fn () => Auth::user()->isAdmin()),
             ])
             ->headerActions([
                Action::make('exportExcel')

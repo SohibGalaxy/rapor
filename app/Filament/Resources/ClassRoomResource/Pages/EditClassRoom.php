@@ -5,12 +5,33 @@ namespace App\Filament\Resources\ClassRoomResource\Pages;
 use App\Filament\Resources\ClassRoomResource;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class EditClassRoom extends EditRecord
 {
     protected static string $resource = ClassRoomResource::class;
+
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\Select::make('school_class_id')
+                    ->relationship('schoolClass', 'name')
+                    ->required()
+                    ->disabled(fn () => Auth::user()->isGuru()),
+                Forms\Components\Select::make('academic_year_id')
+                    ->relationship('academicYear', 'name')
+                    ->required()
+                    ->disabled(fn () => Auth::user()->isGuru()),
+                Forms\Components\Select::make('teacher_id')
+                    ->relationship('teacher', 'name')
+                    ->required()
+                    ->disabled(fn () => Auth::user()->isGuru()),
+            ]);
+    }
 
     protected function getHeaderActions(): array
     {
@@ -19,6 +40,7 @@ class EditClassRoom extends EditRecord
                 ->label('Promote Class')
                 ->icon('heroicon-o-arrow-up-circle')
                 ->color('success')
+                ->visible(fn () => Auth::user()->isAdmin())
                 ->form([
                     Forms\Components\Section::make('Promote ke Kelas Baru')
                         ->description('Pindahkan semua murid ke kelas baru')
