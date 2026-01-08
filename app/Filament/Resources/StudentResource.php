@@ -26,7 +26,6 @@ class StudentResource extends Resource
     protected static ?string $navigationLabel = 'Murid';
     protected static ?string $navigationIcon = 'heroicon-o-users';
     
-   
 
     public static function form(Form $form): Form
     {
@@ -52,12 +51,25 @@ class StudentResource extends Resource
                 }
             })
             ->columns([
-            TextColumn::make('nis'),
-            TextColumn::make('nama'),
+            TextColumn::make('nis')->searchable(),
+            TextColumn::make('nama')->searchable(),
             TextColumn::make('gender'),
+            TextColumn::make('classRooms.schoolClass.name')
+                ->label('Kelas')
+                ->badge()
+                ->separator(', '),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('class_room_id')
+                    ->relationship('classRooms', 'id', modifyQueryUsing: function (Builder $query) {
+                        return $query->with(['schoolClass', 'academicYear']);
+                    })
+                    ->label('Kelas')
+                    ->getOptionLabelFromRecordUsing(fn (\App\Models\ClassRoom $record) => 
+                        $record->schoolClass->name . ' - ' . $record->academicYear->name
+                    )
+                    ->preload()
+                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
