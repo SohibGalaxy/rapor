@@ -19,10 +19,18 @@ class FinalScoresExport implements FromArray, WithEvents, WithStyles
     protected int $tableEndRow;
     protected $classRoom;
     protected $semester;
+    protected ?array $filters = null;
+    protected ?\Illuminate\Database\Eloquent\Collection $filteredFinalScores = null;
 
-    public function __construct(Student $student)
+    public function __construct(Student $student, ?array $filters = null, ?\Illuminate\Database\Eloquent\Collection $filteredFinalScores = null)
     {
         $this->student = $student->load('finalScores.subject', 'finalScores.classRoom.academicYear', 'finalScores.classRoom.teacher');
+        $this->filters = $filters;
+
+        if ($filteredFinalScores !== null) {
+            $this->student->finalScores = $filteredFinalScores;
+        }
+
         $firstFinalScore = $this->student->finalScores->first();
         $this->classRoom = $firstFinalScore ? $firstFinalScore->classRoom : null;
         $this->semester = $firstFinalScore ? $firstFinalScore->semester : null;

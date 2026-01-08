@@ -10,9 +10,13 @@ use PhpOffice\PhpWord\SimpleType\Jc;
 
 class FinalScoreWordExport
 {
-    public static function export(Student $student): string
+    public static function export(Student $student, ?array $filters = null, ?\Illuminate\Database\Eloquent\Collection $filteredFinalScores = null): string
     {
         $student->load('finalScores.subject', 'finalScores.classRoom.academicYear', 'finalScores.classRoom.teacher');
+
+        if ($filteredFinalScores !== null) {
+            $student->finalScores = $filteredFinalScores;
+        }
 
         $firstFinalScore = $student->finalScores->first();
         $classRoom = $firstFinalScore ? $firstFinalScore->classRoom : null;

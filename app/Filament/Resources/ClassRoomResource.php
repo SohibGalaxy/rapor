@@ -23,6 +23,7 @@ use App\Filament\Resources\ClassRoomResource\Pages\EditClassRoom;
 use App\Filament\Resources\ClassRoomResource\Pages\ListClassRooms;
 use App\Filament\Resources\ClassRoomResource\Pages\CreateClassRoom;
 use App\Filament\Resources\ClassRoomResource\Pages\BulkInputScores;
+use App\Filament\Resources\ClassRoomResource\Pages\PromoteClassRoom;
 
 class ClassRoomResource extends Resource
 {

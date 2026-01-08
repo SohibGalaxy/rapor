@@ -10,6 +10,7 @@ class ClassRoom extends Model
         'school_class_id',
         'academic_year_id',
         'teacher_id',
+        'is_active',
     ];
 
     public function schoolClass()
